@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
@@ -165,6 +168,52 @@
     .cat-delete-btn:hover { background: var(--ca-danger); color: #fff; }
     .new-cat-form { background: var(--ca-light); border: 1px dashed var(--ca-accent); border-radius: 12px; padding: 18px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
     .collapsed .catalog-category-body { display: none; }
+
+    /* ===== DESCONTO / APROVAÇÃO ===== */
+    .modal-overlay { display:none; position:fixed; inset:0; z-index:10001; background:rgba(6,28,44,0.88); padding:20px; align-items:center; justify-content:center; }
+    .modal-card { max-width:560px; width:100%; background:#fff; border-radius:18px; padding:30px; border:1px solid var(--ca-gray-border); box-shadow:0 20px 48px -10px rgba(0,0,0,0.35); }
+    .modal-card h3 { margin:0 0 6px 0; color:var(--ca-primary); font-size:18px; font-weight:800; display:flex; align-items:center; gap:9px; }
+    .modal-card .modal-sub { margin:0 0 20px 0; color:var(--ca-text-muted); font-size:13.5px; }
+    .modal-actions { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+    .btn-danger  { background:var(--ca-danger); color:#fff; border:none; padding:11px 18px; border-radius:10px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; font-size:14px; display:inline-flex; align-items:center; gap:6px; }
+    .btn-danger:hover  { opacity:0.88; }
+    .btn-success { background:var(--ca-success); color:#fff; border:none; padding:11px 18px; border-radius:10px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; font-size:14px; display:inline-flex; align-items:center; gap:6px; }
+    .btn-success:hover { opacity:0.88; }
+    .btn-warning { background:#f59e0b; color:#fff; border:none; padding:11px 18px; border-radius:10px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; font-size:14px; display:inline-flex; align-items:center; gap:6px; }
+    .btn-warning:hover { opacity:0.88; }
+
+    /* status pill */
+    .pill-enviada    { background:#f0fdf4; color:#166534;  border-color:#86efac; }
+    .pill-negociacao { background:#e0f2fe; color:#0c4a6e;  border-color:#7dd3fc; }
+    .pill-validacao  { background:#fef3c7; color:#92400e;  border-color:#fde68a; }
+    .pill-aprovado   { background:#d1fae5; color:#065f46;  border-color:#6ee7b7; }
+    .pill-recusado   { background:#fee2e2; color:#991b1b;  border-color:#fca5a5; }
+    .pill-reemitida  { background:#dbeafe; color:#1e3a8a;  border-color:#93c5fd; }
+    .pill-fechada    { background:#d1fae5; color:#065f46;  border-color:#6ee7b7; font-weight:900; }
+    .pill-perdida    { background:#fee2e2; color:#991b1b;  border-color:#fca5a5; }
+
+    /* notif badge */
+    .notif-badge { display:inline-flex; align-items:center; justify-content:center; background:var(--ca-danger); color:#fff; border-radius:999px; font-size:11px; font-weight:900; min-width:18px; height:18px; padding:0 5px; margin-left:6px; }
+
+    /* card desconto info */
+    .desc-info { background:var(--ca-accent-light); border:1px solid var(--ca-accent); border-radius:10px; padding:13px 15px; margin-top:10px; font-size:13px; line-height:1.7; }
+    .desc-info b { color:var(--ca-primary); }
+
+    /* card pendente */
+    .card-pendente { border-left:4px solid #f59e0b !important; }
+
+    /* tabela de descontos */
+    .desc-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .desc-table th { background:var(--ca-primary); color:#fff; padding:10px 12px; text-align:left; font-size:12px; font-weight:600; }
+    .desc-table th:first-child { border-radius:8px 0 0 0; }
+    .desc-table th:last-child  { border-radius:0 8px 0 0; }
+    .desc-table td { padding:10px 12px; border-bottom:1px solid var(--ca-gray-border); vertical-align:middle; }
+    .desc-table tr:hover td { background:var(--ca-accent-light); }
+    .desc-table tr:last-child td { border-bottom:none; }
+
+    /* resumo box no modal */
+    .resumo-box { background:var(--ca-light); border-radius:10px; padding:14px 16px; margin-bottom:16px; font-size:13.5px; line-height:1.85; border:1px solid var(--ca-gray-border); }
+    .resumo-box b { color:var(--ca-primary); }
   </style>
 </head>
 <body>
@@ -172,10 +221,10 @@
   <!-- LOGIN -->
   <div id="loginScreen">
     <h2 style="margin:0 0 6px 0; color:#061C2C;">Acesso à Plataforma</h2>
-    <p style="margin:0 0 18px 0; color:#64748b;">Entre com seu e-mail e senha.</p>
+    <p style="margin:0 0 18px 0; color:#64748b;">Acesso restrito. Use as credenciais fornecidas pelo administrador.</p>
     <div class="form-group">
       <label>E-mail</label>
-      <input type="email" id="loginEmail" placeholder="nome.sobrenome@grupovillela.com" autocomplete="username">
+      <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="username">
     </div>
     <div class="form-group">
       <label>Senha</label>
@@ -208,6 +257,78 @@
     <p style="margin:0; opacity:.9;">Aguarde enquanto diagramamos o documento.</p>
   </div>
 
+  <!-- MODAL DESCONTO: Consultor solicita -->
+  <div id="modalSolicitarDesconto" class="modal-overlay">
+    <div class="modal-card">
+      <h3><i class="ph ph-percent" style="color:var(--ca-accent);"></i> Solicitar Desconto</h3>
+      <p class="modal-sub">Informe o desconto pretendido e uma justificativa. Será enviado para aprovação da gestão.</p>
+      <div class="form-group">
+        <label>Valor Original da Proposta</label>
+        <input type="text" id="solValorOriginal" readonly style="font-weight:800; color:var(--ca-accent); background:#f8fafc;">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Desconto Solicitado (%)</label>
+          <input type="number" id="solPct" min="0.1" max="100" step="0.1" placeholder="Ex: 10" oninput="calcSolicitacao()">
+        </div>
+        <div class="form-group">
+          <label>Equivale a (R$)</label>
+          <input type="text" id="solValorRs" readonly style="font-weight:700; color:var(--ca-danger); background:#f8fafc;">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Valor Final Pretendido</label>
+        <input type="text" id="solValorFinal" readonly style="font-weight:800; color:var(--ca-success); background:#f8fafc;">
+      </div>
+      <div class="form-group">
+        <label>Justificativa *</label>
+        <textarea id="solJustificativa" rows="3" placeholder="Ex: Cliente estratégico, indicação de parceiro, alta probabilidade de fechamento..."></textarea>
+      </div>
+      <div id="solErro" style="display:none; color:var(--ca-danger); font-weight:700; margin-bottom:8px;"></div>
+      <div class="modal-actions">
+        <button class="btn-principal" style="flex:1; margin-top:0; padding:12px;" onclick="confirmarSolicitarDesconto()">
+          <i class="ph ph-paper-plane-right"></i> Enviar para Gestão
+        </button>
+        <button class="btn-outline" style="padding:12px 18px;" onclick="fecharModalSolicitar()">
+          <i class="ph ph-x"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DESCONTO: Gestor aprova/recusa -->
+  <div id="modalAnalisarDesconto" class="modal-overlay">
+    <div class="modal-card">
+      <h3><i class="ph ph-check-square" style="color:var(--ca-accent);"></i> Analisar Solicitação de Desconto</h3>
+      <p class="modal-sub">Analise a solicitação e defina o desconto a autorizar. Você pode aprovar, alterar o valor ou recusar.</p>
+      <div id="apvResumo" class="resumo-box"></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Desconto a Autorizar (%)</label>
+          <input type="number" id="apvPct" min="0" max="100" step="0.1" placeholder="0" oninput="calcAprovacao()">
+        </div>
+        <div class="form-group">
+          <label>Valor do Desconto (R$)</label>
+          <input type="text" id="apvValorRs" readonly style="font-weight:700; color:var(--ca-danger); background:#f8fafc;">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Valor Final Autorizado</label>
+        <input type="text" id="apvValorFinal" readonly style="font-weight:800; color:var(--ca-success); background:#f8fafc;">
+      </div>
+      <div class="form-group">
+        <label>Observação (opcional)</label>
+        <textarea id="apvObservacao" rows="2" placeholder="Comentário sobre a decisão..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="decidirDesconto('aprovar')"><i class="ph ph-check-circle"></i> Aprovar</button>
+        <button class="btn-warning" onclick="decidirDesconto('parcial')"><i class="ph ph-minus-circle"></i> Parcial</button>
+        <button class="btn-danger"  onclick="decidirDesconto('recusar')"><i class="ph ph-x-circle"></i> Recusar</button>
+        <button class="btn-outline" onclick="fecharModalAnalisar()"><i class="ph ph-x"></i> Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- APP -->
   <div class="container" id="appContainer">
     <div class="header" id="mainHeader">
@@ -237,8 +358,8 @@
     <div class="tabs-container">
       <button class="tab-btn active" onclick="switchTab('demandas', event)"><i class="ph ph-briefcase"></i> Regularização & Extras</button>
       <button class="tab-btn" onclick="switchTab('pdf', event)"><i class="ph ph-file-pdf"></i> Importar e-CAC</button>
-      <button class="tab-btn" onclick="switchTab('historico', event)"><i class="ph ph-clock-counter-clockwise"></i> Meu Histórico</button>
-      <button class="tab-btn" id="adminTabBtn" onclick="switchTab('admin', event)"><i class="ph ph-database"></i> Admin</button>
+      <button class="tab-btn" onclick="switchTab('historico', event)" id="tabBtnHistorico"><i class="ph ph-clock-counter-clockwise"></i> Meu Histórico<span id="notifBadgeConsultor" class="notif-badge" style="display:none;"></span></button>
+      <button class="tab-btn" id="adminTabBtn" onclick="switchTab('admin', event)"><i class="ph ph-database"></i> Admin<span id="notifBadgeAdmin" class="notif-badge" style="display:none;"></span></button>
     </div>
 
     <!-- ABA 1: DEMANDAS -->
@@ -392,6 +513,11 @@
             <option value="mais" id="optAjusteMais">Acréscimo Risco/Avulso</option>
             <option value="menos" id="optAjusteMenos">Desconto Parceiro</option>
           </select>
+          <div id="discountRequestBtn" style="display:none; margin-top:10px;">
+            <button class="btn-outline" style="width:100%; justify-content:center; padding:12px; border-color:var(--ca-accent); color:var(--ca-accent);" onclick="abrirSolicitar(lastSavedPropostaId)">
+              <i class="ph ph-percent"></i> Solicitar Desconto Especial para Gestão
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label>Custos Governamentais a Repassar (R$)</label>
@@ -450,6 +576,7 @@
         <button class="admin-subtab-btn active" onclick="switchAdminTab('dashboard', event)"><i class="ph ph-chart-bar"></i> Dashboard</button>
         <button class="admin-subtab-btn" onclick="switchAdminTab('usuarios', event)"><i class="ph ph-users"></i> Usuários</button>
         <button class="admin-subtab-btn" onclick="switchAdminTab('catalogo', event)"><i class="ph ph-tag"></i> Catálogo de Preços</button>
+        <button class="admin-subtab-btn" id="adminSubtabDescontosBtn" onclick="switchAdminTab('descontos', event)"><i class="ph ph-percent"></i> Descontos<span id="notifBadgeDescontos" class="notif-badge" style="display:none;"></span></button>
       </div>
 
       <!-- Sub-aba: Dashboard -->
@@ -475,11 +602,14 @@
               <label>Filtrar por Status</label>
               <select id="filtroStatus" onchange="renderizarHistoricos(); renderAdminDashboard();">
                 <option value="">Todos</option>
-                <option>Enviada</option>
-                <option>Em Negociação</option>
-                <option>Validação Gestão</option>
-                <option>Fechada</option>
-                <option>Perdida</option>
+                <option value="enviada_cliente">Enviada ao Cliente</option>
+                <option value="em_negociacao">Em Negociação</option>
+                <option value="validacao_gestao">Validação Gestão</option>
+                <option value="desconto_aprovado">Desconto Aprovado</option>
+                <option value="desconto_recusado">Desconto Recusado</option>
+                <option value="reemitida">Reemitida</option>
+                <option value="fechada">Fechada</option>
+                <option value="perdida">Perdida</option>
               </select>
             </div>
             <div class="form-group" style="grid-column: span 2;">
@@ -512,7 +642,7 @@
           </div>
           <div class="form-group">
             <label>E-mail Corporativo</label>
-            <input type="email" id="newUserEmail" placeholder="joao.silva@grupovillela.com">
+            <input type="email" id="newUserEmail" placeholder="email@empresa.com">
           </div>
           <div class="form-group">
             <label>Senha</label>
@@ -591,6 +721,63 @@
         <div class="section-title"><i class="ph ph-tag"></i> Categorias e Serviços</div>
         <div id="catalogoEditorWrap"></div>
       </div>
+
+      <!-- Sub-aba: Descontos -->
+      <div id="admin-subtab-descontos" class="admin-subtab-content">
+        <div class="resumo-executivo" style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+            <div>
+              <h3 style="margin:0; color:var(--ca-primary);">Controle de Descontos</h3>
+              <p style="margin:4px 0 0 0; color:var(--ca-text-muted); font-size:13px;">Solicitações, aprovações e histórico completo.</p>
+            </div>
+            <button class="btn-buscar" onclick="exportDescontosCSV()" style="background:var(--ca-primary);"><i class="ph ph-download-simple"></i> Exportar CSV</button>
+          </div>
+          <div class="resumo-grid" id="descontoKpis" style="grid-template-columns:repeat(3,1fr); margin-bottom:14px;"></div>
+          <div class="grid-4" style="margin-top:10px; gap:10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Consultor</label>
+              <select id="filtroDescConsultor" onchange="renderDescontosPanel()"><option value="">Todos</option></select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Status</label>
+              <select id="filtroDescStatus" onchange="renderDescontosPanel()">
+                <option value="">Todos</option>
+                <option value="validacao_gestao">Pendente Validação</option>
+                <option value="desconto_aprovado">Aprovados</option>
+                <option value="desconto_recusado">Recusados</option>
+                <option value="reemitida">Reemitidas</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Faixa de Desconto</label>
+              <select id="filtroDescFaixa" onchange="renderDescontosPanel()">
+                <option value="">Todas</option>
+                <option value="0-5">0% a 5%</option>
+                <option value="5-10">5% a 10%</option>
+                <option value="10+">Acima de 10%</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Período (de)</label>
+              <input type="date" id="filtroDescDe" onchange="renderDescontosPanel()">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:10px; gap:10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Período (até)</label>
+              <input type="date" id="filtroDescAte" onchange="renderDescontosPanel()">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Buscar por cliente ou consultor</label>
+              <input type="text" id="filtroDescBusca" placeholder="Digite nome do cliente ou consultor..." oninput="renderDescontosPanel()">
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto;" id="descontosTableWrap">
+          <p style="text-align:center; color:#999; padding:30px;">Carregando...</p>
+        </div>
+      </div>
+
     </div>
 
   </div><!-- /container -->
@@ -602,12 +789,150 @@
 const DEFAULT_DOMAIN = "grupovillela.com";
 const DEFAULT_PASSWORD = "Contabilize2026";
 const ADMIN_EMAIL = "admin@grupovillela.com";
-const ADMIN_PASSWORD = "Admin123456";
+const ADMIN_PASSWORD = "Admin102030";
 
-const LS_USERS = "ca_users";
-const LS_SESSION = "ca_session";
-const LS_PROPOSTAS = "ca_propostas";
-const LS_TICKET_SEQ = "ca_ticket_seq";
+const LS_SESSION = "ca_session"; // mantido para sessão local
+
+// =========================
+// SUPABASE
+// =========================
+const SUPABASE_URL = "https://ghdwzafevzlxjspcbbnj.supabase.co";
+const SUPABASE_KEY = "SUA_PUBLISHABLE_KEY_AQUI";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// =========================
+// HELPERS SUPABASE ASYNC
+// =========================
+async function sbGetUsuarios() {
+  const { data } = await sb.from("usuarios").select("*");
+  return data || [];
+}
+async function sbSaveUsuario(u) {
+  const { data } = await sb.from("usuarios").upsert(u, { onConflict: "email" }).select();
+  return data?.[0];
+}
+async function sbDeleteUsuario(email) {
+  await sb.from("usuarios").delete().eq("email", email);
+}
+async function sbGetUsuarioByEmail(email) {
+  const { data } = await sb.from("usuarios").select("*").eq("email", email.toLowerCase()).single();
+  return data || null;
+}
+async function sbGetPropostas() {
+  const { data } = await sb.from("propostas").select("*").order("data_iso", { ascending: false });
+  return (data || []).map(sbPropostaToLocal);
+}
+async function sbSavePropostaLocal(p) {
+  const row = sbPropostaToRow(p);
+  const { data } = await sb.from("propostas").insert(row).select();
+  return data?.[0];
+}
+async function sbUpdateProposta(id, fields) {
+  await sb.from("propostas").update(fields).eq("id", id);
+}
+async function sbGetCatalogo() {
+  const { data } = await sb.from("catalogo").select("*").order("id", { ascending: false }).limit(1);
+  return data?.[0]?.dados || null;
+}
+async function sbSaveCatalogo(dados) {
+  const { data: existing } = await sb.from("catalogo").select("id").limit(1);
+  if (existing && existing.length > 0) {
+    await sb.from("catalogo").update({ dados, updated_at: new Date().toISOString() }).eq("id", existing[0].id);
+  } else {
+    await sb.from("catalogo").insert({ dados });
+  }
+}
+async function sbGetConfig() {
+  const { data } = await sb.from("configuracoes").select("*").order("id", { ascending: false }).limit(1);
+  return data?.[0]?.dados || null;
+}
+async function sbSaveConfig(dados) {
+  const { data: existing } = await sb.from("configuracoes").select("id").limit(1);
+  if (existing && existing.length > 0) {
+    await sb.from("configuracoes").update({ dados, updated_at: new Date().toISOString() }).eq("id", existing[0].id);
+  } else {
+    await sb.from("configuracoes").insert({ dados });
+  }
+}
+async function sbGetNextTicket() {
+  const { data } = await sb.from("ticket_seq").select("*").limit(1);
+  const row = data?.[0];
+  if (!row) return "VB000001";
+  const next = (row.seq || 0) + 1;
+  await sb.from("ticket_seq").update({ seq: next }).eq("id", row.id);
+  return "VB" + String(next).padStart(6, "0");
+}
+
+// Conversão proposta local <-> row do banco
+function sbPropostaToRow(p) {
+  return {
+    ticket: p.ticket || "",
+    data_iso: p.dataISO || new Date().toISOString(),
+    data_label: p.dataLabel || "",
+    consultor_nome: p.consultorNome || "",
+    consultor_email: p.consultorEmail || "",
+    consultor_telefone: p.consultorTelefone || "",
+    consultor_cargo: p.consultorCargo || "",
+    cnpj: p.cnpj || "",
+    cliente: p.cliente || "",
+    uf: p.uf || "",
+    porte: p.porte || "",
+    regime: p.regime || "",
+    tipo_proposta: p.tipoProposta || "",
+    total: p.total || 0,
+    memoria: p.memoria || [],
+    status: p.status || "enviada_cliente",
+    status_updated_at: p.statusUpdatedAt || new Date().toISOString(),
+    justificativa_perda: p.justificativaPerda || "",
+    // Desconto (spec)
+    valor_original: p.valorOriginal || 0,
+    desconto_solicitado_percentual: p.descontoSolicitadoPercentual || 0,
+    desconto_solicitado_valor: p.descontoSolicitadoValor || 0,
+    desconto_autorizado_percentual: p.descontoAutorizadoPercentual || 0,
+    desconto_autorizado_valor: p.descontoAutorizadoValor || 0,
+    valor_final: p.valorFinal || 0,
+    solicitado_por: p.solicitadoPor || "",
+    aprovado_por: p.aprovadoPor || "",
+    data_solicitacao_desconto: p.dataSolicitacaoDesconto || null,
+    data_aprovacao_desconto: p.dataAprovacaoDesconto || null,
+    historico_desconto: p.historico || []
+  };
+}
+function sbPropostaToLocal(row) {
+  return {
+    id: row.id,
+    ticket: row.ticket,
+    dataISO: row.data_iso,
+    dataLabel: row.data_label,
+    consultorNome: row.consultor_nome,
+    consultorEmail: row.consultor_email,
+    consultorTelefone: row.consultor_telefone,
+    consultorCargo: row.consultor_cargo,
+    cnpj: row.cnpj,
+    cliente: row.cliente,
+    uf: row.uf,
+    porte: row.porte,
+    regime: row.regime,
+    tipoProposta: row.tipo_proposta,
+    total: Number(row.total),
+    memoria: row.memoria || [],
+    status: row.status || "enviada_cliente",
+    statusUpdatedAt: row.status_updated_at,
+    justificativaPerda: row.justificativa_perda || "",
+    // Desconto (spec)
+    valorOriginal: Number(row.valor_original || 0),
+    descontoSolicitadoPercentual: Number(row.desconto_solicitado_percentual || 0),
+    descontoSolicitadoValor: Number(row.desconto_solicitado_valor || 0),
+    descontoAutorizadoPercentual: Number(row.desconto_autorizado_percentual || 0),
+    descontoAutorizadoValor: Number(row.desconto_autorizado_valor || 0),
+    valorFinal: Number(row.valor_final || 0),
+    solicitadoPor: row.solicitado_por || "",
+    aprovadoPor: row.aprovado_por || "",
+    dataSolicitacaoDesconto: row.data_solicitacao_desconto || null,
+    dataAprovacaoDesconto: row.data_aprovacao_desconto || null,
+    historico: row.historico_desconto || []
+  };
+}
 const LS_CATALOGO = "ca_catalogo";
 const LS_CONFIG = "ca_config";
 
@@ -869,40 +1194,33 @@ function isValidPhoneMasked(phone) {
 // =========================
 // USERS
 // =========================
-function getUsers() { return JSON.parse(localStorage.getItem(LS_USERS) || "[]"); }
-function saveUsers(users) { localStorage.setItem(LS_USERS, JSON.stringify(users)); }
+// Users agora via Supabase (mantém cache local leve para uso síncrono em alguns pontos)
+let _usersCache = [];
+async function refreshUsersCache() {
+  _usersCache = await sbGetUsuarios();
+}
+function getUsers() { return _usersCache; }
+function saveUsers(users) { _usersCache = users; }
 function getUserByEmail(email) {
   const e = (email || "").toLowerCase();
-  return getUsers().find(u => (u.email || "").toLowerCase() === e);
+  return _usersCache.find(u => (u.email || "").toLowerCase() === e);
 }
-function upsertUserPhone(email, telefone) {
+async function upsertUserPhone(email, telefone) {
   const e = (email || "").toLowerCase();
-  const users = getUsers();
-  const idx = users.findIndex(u => (u.email || "").toLowerCase() === e);
-  if (idx >= 0) users[idx].telefone = String(telefone || "").trim();
-  else users.push({ id: Date.now(), nome: nameFromEmail(e), email: e, role: "lider", telefone: String(telefone || "").trim() });
-  saveUsers(users);
+  // Só atualiza telefone se o usuário já existe (cadastrado pelo admin)
+  await sb.from("usuarios").update({ telefone: String(telefone || "").trim() }).eq("email", e);
+  await refreshUsersCache();
 }
 
 // =========================
 // TICKET
 // =========================
-function initTicketSeqIfNeeded() {
-  const current = parseInt(localStorage.getItem(LS_TICKET_SEQ) || "0", 10);
-  if (current > 0) return;
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
-  let max = 0;
-  for (const p of h) {
-    const m = String(p.ticket || "").match(/^VB(\d+)$/);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
-  }
-  if (max > 0) localStorage.setItem(LS_TICKET_SEQ, String(max));
+async function initTicketSeqIfNeeded() {
+  // Ticket seq agora no Supabase
 }
 
-function getNextTicket() {
-  const seq = (parseInt(localStorage.getItem(LS_TICKET_SEQ) || "0", 10) + 1);
-  localStorage.setItem(LS_TICKET_SEQ, String(seq));
-  return "VB" + String(seq).padStart(6, "0");
+async function getNextTicket() {
+  return await sbGetNextTicket();
 }
 
 // =========================
@@ -925,56 +1243,48 @@ function nameFromEmail(email) {
   return cap(local);
 }
 
-function seedAdminIfNeeded() {
-  const users = JSON.parse(localStorage.getItem(LS_USERS) || "[]");
-  const hasAdmin = users.some(u => (u.email || "").toLowerCase() === ADMIN_EMAIL);
-  if (hasAdmin) return;
-  users.push({ id: Date.now(), nome: "Administrador", email: ADMIN_EMAIL, senha: ADMIN_PASSWORD, role: "admin", telefone: "" });
-  localStorage.setItem(LS_USERS, JSON.stringify(users));
+async function seedAdminIfNeeded() {
+  const existing = await sbGetUsuarioByEmail(ADMIN_EMAIL);
+  if (existing) return;
+  await sbSaveUsuario({ nome: "Administrador", email: ADMIN_EMAIL, senha: ADMIN_PASSWORD, role: "admin", telefone: "" });
 }
 
 function getSession() { return JSON.parse(localStorage.getItem(LS_SESSION) || "null"); }
 function setSession(sess) { localStorage.setItem(LS_SESSION, JSON.stringify(sess)); }
 function logout() { localStorage.removeItem(LS_SESSION); location.reload(); }
 
-function login(email, senha) {
+async function login(email, senha) {
   const e = (email || "").trim().toLowerCase();
-  if (!isValidVillelaEmail(e)) return { ok: false, msg: "E-mail inválido. Use nome.sobrenome@grupovillela.com" };
 
+  // Admin sempre funciona com credenciais fixas
+  // Admin: acesso sempre garantido por código, independente do banco
   if (e === ADMIN_EMAIL) {
-    if (senha !== ADMIN_PASSWORD) return { ok: false, msg: "Senha de administrador incorreta." };
+    if (senha !== ADMIN_PASSWORD) return { ok: false, msg: "Senha incorreta." };
     setSession({ email: ADMIN_EMAIL, role: "admin", nome: "Administrador" });
     return { ok: true, role: "admin" };
   }
 
-  // Verificar senha customizada (usuário cadastrado via painel)
-  const users = JSON.parse(localStorage.getItem(LS_USERS) || "[]");
-  const found = users.find(u => (u.email || "").toLowerCase() === e);
+  // Demais usuários: devem estar cadastrados pelo admin
+  const found = await sbGetUsuarioByEmail(e);
+  if (!found) return { ok: false, msg: "Usuário não encontrado. Solicite acesso ao administrador." };
+  if (!found.senha || senha !== found.senha) return { ok: false, msg: "Senha incorreta." };
 
-  // Se tem usuário com senha customizada, usar ela; senão usar DEFAULT_PASSWORD
-  const senhaEsperada = (found && found.senha && found.senha !== DEFAULT_PASSWORD) ? found.senha : DEFAULT_PASSWORD;
-
-  if (senha !== senhaEsperada) return { ok: false, msg: "Senha incorreta." };
-
-  if (!found) {
-    users.push({ id: Date.now(), nome: nameFromEmail(e), email: e, senha: DEFAULT_PASSWORD, role: "lider", telefone: "" });
-    localStorage.setItem(LS_USERS, JSON.stringify(users));
-  }
-
-  const nome = found?.nome || nameFromEmail(e);
-  const role = found?.role || "lider";
-  setSession({ email: e, role, nome });
-  return { ok: true, role };
+  await refreshUsersCache();
+  setSession({ email: e, role: found.role || "lider", nome: found.nome || e });
+  return { ok: true, role: found.role || "lider" };
 }
 
-function handleLogin() {
+async function handleLogin() {
   const email = document.getElementById("loginEmail").value.trim();
   const senha = document.getElementById("loginSenha").value;
   const erro = document.getElementById("loginErro");
-  const res = login(email, senha);
+  const btn = document.querySelector("#loginScreen .btn-principal");
+  if (btn) { btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Entrando...'; btn.disabled = true; }
+  const res = await login(email, senha);
   if (!res.ok) {
     erro.style.display = "block";
     erro.textContent = res.msg;
+    if (btn) { btn.innerHTML = 'Entrar'; btn.disabled = false; }
     return;
   }
   location.reload();
@@ -1025,18 +1335,20 @@ function savePhoneFirstAccess() {
   if (overlay) overlay.style.display = "none";
 }
 
-function backfillPhoneToOldPropostas(email) {
+async function backfillPhoneToOldPropostas(email) {
   const u = getUserByEmail(email);
   const tel = (u?.telefone || "").trim();
   if (!tel) return;
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
-  let changed = false;
-  for (const p of h) {
-    if ((p.consultorEmail || "").toLowerCase() === (email || "").toLowerCase()) {
-      if (!p.consultorTelefone) { p.consultorTelefone = tel; changed = true; }
+  // Atualiza propostas sem telefone no Supabase
+  const { data } = await sb.from("propostas")
+    .select("id")
+    .eq("consultor_email", email.toLowerCase())
+    .or("consultor_telefone.is.null,consultor_telefone.eq.");
+  if (data?.length) {
+    for (const row of data) {
+      await sb.from("propostas").update({ consultor_telefone: tel }).eq("id", row.id);
     }
   }
-  if (changed) localStorage.setItem(LS_PROPOSTAS, JSON.stringify(h));
 }
 
 // =========================
@@ -1050,10 +1362,9 @@ let lastSavedPropostaId = null;
 // =========================
 // INIT
 // =========================
-window.onload = () => {
-  seedAdminIfNeeded();
-  initTicketSeqIfNeeded();
-  getCatalogo(); // garante seed do catálogo
+window.onload = async () => {
+  await refreshUsersCache();
+  await seedAdminIfNeeded();
 
   const session = getSession();
   const loginScreen = document.getElementById("loginScreen");
@@ -1077,29 +1388,13 @@ window.onload = () => {
   applyRoleUI(session);
   populateCatExtrasSelect();
   updateDynamicLabels();
-  normalizePropostas();
-  renderizarHistoricos();
+  await renderizarHistoricos();
   renderAdminDashboard();
   requirePhoneFirstAccess(session);
 };
 
 function normalizePropostas() {
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
-  let changed = false;
-  const users = getUsers();
-  for (const p of h) {
-    if (!p.status) { p.status = "Enviada"; changed = true; }
-    if (!p.statusUpdatedAt) { p.statusUpdatedAt = p.dataISO || new Date().toISOString(); changed = true; }
-    if (!p.uf) { p.uf = ""; changed = true; }
-    if (!p.porte) { p.porte = ""; changed = true; }
-    if (!p.ticket) { p.ticket = getNextTicket(); changed = true; }
-    if (p.consultorTelefone === undefined) { p.consultorTelefone = ""; changed = true; }
-    if (!p.consultorTelefone && p.consultorEmail) {
-      const u = users.find(x => (x.email || "").toLowerCase() === (p.consultorEmail || "").toLowerCase());
-      if (u?.telefone) { p.consultorTelefone = u.telefone; changed = true; }
-    }
-  }
-  if (changed) localStorage.setItem(LS_PROPOSTAS, JSON.stringify(h));
+  // Normalização agora feita no Supabase
 }
 
 // =========================
@@ -1130,6 +1425,7 @@ function switchAdminTab(tab, event) {
   if (content) content.classList.add('active');
 
   if (tab === 'usuarios') renderTabelaUsuarios();
+  if (tab === 'descontos') renderDescontosPanel();
   if (tab === 'catalogo') { renderCatalogoEditor(); carregarConfiguracoesPainel(); }
   if (tab === 'dashboard') { renderizarHistoricos(); renderAdminDashboard(); }
 }
@@ -1513,11 +1809,14 @@ function gerarMemoriaCalculoManual() {
   area.style.display = 'block';
   area.scrollIntoView({ behavior: 'smooth' });
   document.getElementById('btnImprimirDemandas').style.display = 'flex';
+  const discBtn = document.getElementById('discountRequestBtn');
+  if (discBtn) discBtn.style.display = 'block';
+  // Re-check notifications
+  atualizarNotificacoes();
   salvarHistoricoProposta(totalFinal, objMemoria);
 }
 
-function salvarHistoricoProposta(total, memoria) {
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || '[]');
+async function salvarHistoricoProposta(total, memoria) {
   const session = getSession();
   const cnpj = document.getElementById('cnpjManual')?.value || '';
   const cliente = document.getElementById('cliNomeManual')?.value || '';
@@ -1525,9 +1824,9 @@ function salvarHistoricoProposta(total, memoria) {
   const porte = document.getElementById('cliPorte')?.value || '';
   const u = getUserByEmail(session?.email);
   const tel = (u?.telefone || "").trim();
+  const ticket = await getNextTicket();
   const p = {
-    id: Date.now(),
-    ticket: getNextTicket(),
+    ticket,
     dataISO: new Date().toISOString(),
     dataLabel: new Date().toLocaleString('pt-BR'),
     consultorNome: session?.nome || 'Não identif.',
@@ -1542,46 +1841,41 @@ function salvarHistoricoProposta(total, memoria) {
     tipoProposta: 'Regularização & Extras',
     total: total,
     memoria: memoria,
-    status: "Enviada",
+    status: "enviada_cliente",
     statusUpdatedAt: new Date().toISOString(),
-    gestaoDescontoPct: "",
-    justificativaPerda: ""
+    justificativaPerda: "",
+    // Desconto (spec)
+    valorOriginal: total,
+    descontoSolicitadoPercentual: 0,
+    descontoSolicitadoValor: 0,
+    descontoAutorizadoPercentual: 0,
+    descontoAutorizadoValor: 0,
+    valorFinal: 0,
+    solicitadoPor: "",
+    aprovadoPor: "",
+    dataSolicitacaoDesconto: null,
+    dataAprovacaoDesconto: null,
+    historico: []
   };
-  h.unshift(p);
-  localStorage.setItem(LS_PROPOSTAS, JSON.stringify(h));
-  lastSavedPropostaId = p.id;
-  renderizarHistoricos();
+  const saved = await sbSavePropostaLocal(p);
+  lastSavedPropostaId = saved?.id || null;
+  await renderizarHistoricos();
   renderAdminDashboard();
+  atualizarNotificacoes();
 }
 
 // =========================
 // HISTÓRICO / ADMIN
 // =========================
-function updatePropostaStatus(id, newStatus) {
-  const session = getSession();
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
-  const idx = h.findIndex(p => p.id === id);
-  if (idx < 0) return;
-  if (session?.role !== "admin" && h[idx].consultorEmail !== session.email) {
-    alert("Você não pode alterar o status de propostas de outro consultor.");
-    return;
+async function updatePropostaStatus(id, newStatus) {
+    await sbUpdateProposta(id, { status: newStatus, status_updated_at: new Date().toISOString() });
+    await renderizarHistoricos();
+    renderAdminDashboard();
   }
-  h[idx].status = newStatus;
-  h[idx].statusUpdatedAt = new Date().toISOString();
-  localStorage.setItem(LS_PROPOSTAS, JSON.stringify(h));
-  renderizarHistoricos();
-  renderAdminDashboard();
-}
 
-function updateJustificativaPerda(id, txt) {
-  const session = getSession();
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
-  const idx = h.findIndex(p => p.id === id);
-  if (idx < 0) return;
-  if (session?.role !== "admin" && h[idx].consultorEmail !== session.email) return;
-  h[idx].justificativaPerda = String(txt || "");
-  localStorage.setItem(LS_PROPOSTAS, JSON.stringify(h));
-}
+async function updateJustificativaPerda(id, txt) {
+    await sbUpdateProposta(id, { justificativa_perda: String(txt || "") });
+  }
 
 function populateConsultorFilter(propostas) {
   const sel = document.getElementById("filtroConsultor");
@@ -1615,9 +1909,9 @@ function matchDateRange(dataISO, start, end) {
   return true;
 }
 
-function renderizarHistoricos() {
+async function renderizarHistoricos() {
   const session = getSession();
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || '[]');
+  const h = await sbGetPropostas();
   const emailAtual = session?.email || '';
 
   const lCons = document.getElementById('listaHistoricoConsultor');
@@ -1642,7 +1936,7 @@ function renderizarHistoricos() {
     const hAdmin = h.filter(x => {
       const matchQ = (x.cliente || '').toLowerCase().includes(q) || (x.cnpj || '').includes(q) || (x.ticket || '').toLowerCase().includes(q) || (x.consultorNome || '').toLowerCase().includes(q);
       const matchConsultor = !filtroConsultor || x.consultorEmail === filtroConsultor;
-      const matchStatus = !filtroStatus || (x.status || "Enviada") === filtroStatus;
+      const matchStatus = !filtroStatus || (x.status || "enviada_cliente") === filtroStatus;
       const matchEmpresa = !filtroEmpresa || (x.cliente || "").toLowerCase().includes(filtroEmpresa) || (x.cnpj || "").includes(filtroEmpresa) || (x.ticket || "").toLowerCase().includes(filtroEmpresa);
       const matchData = matchDateRange(x.dataISO, start, end);
       return matchQ && matchConsultor && matchStatus && matchEmpresa && matchData;
@@ -1652,47 +1946,115 @@ function renderizarHistoricos() {
   }
 }
 
+const STATUS_LABEL = {
+  enviada_cliente: "Enviada ao Cliente",
+  em_negociacao: "Em Negociação",
+  validacao_gestao: "Validação Gestão",
+  desconto_aprovado: "Desconto Aprovado",
+  desconto_recusado: "Desconto Recusado",
+  reemitida: "Reemitida",
+  fechada: "Fechada",
+  perdida: "Perdida",
+  rascunho: "Rascunho"
+};
+const STATUS_PILL = {
+  enviada_cliente: "pill-enviada",
+  em_negociacao:   "pill-negociacao",
+  validacao_gestao:"pill-validacao",
+  desconto_aprovado:"pill-aprovado",
+  desconto_recusado:"pill-recusado",
+  reemitida:       "pill-reemitida",
+  fechada:         "pill-fechada",
+  perdida:         "pill-recusado",
+  rascunho:        ""
+};
+function getStatusPillClass(status) { return STATUS_PILL[status] || ""; }
+function getStatusLabel(status) { return STATUS_LABEL[status] || status || "enviada_cliente"; }
+
 function buildCard(x, isAdmin) {
   const session = getSession();
-  const canEditStatus = (session?.role === "admin") || (session?.role === "lider" && x.consultorEmail === session.email);
-  const canEditPerda = (session?.role === "admin") || (x.consultorEmail === session?.email);
-  const status = x.status || "Enviada";
+  const isOwner = x.consultorEmail === session?.email;
+  const isGestor = session?.role === "admin";
+  const canEditStatus = isGestor || (isOwner);
+  const canEditPerda = isGestor || isOwner;
+  const status = x.status || "enviada_cliente";
+  const label = getStatusLabel(status);
+  const pillClass = getStatusPillClass(status);
   const updated = x.statusUpdatedAt ? new Date(x.statusUpdatedAt).toLocaleString('pt-BR') : "-";
   const ticket = x.ticket || "-";
+  const isPendente = status === "validacao_gestao";
+
+  const allStatuses = isGestor
+    ? ["enviada_cliente","em_negociacao","validacao_gestao","desconto_aprovado","desconto_recusado","reemitida","fechada","perdida"]
+    : ["enviada_cliente","em_negociacao","fechada","perdida"];
+
   const statusControl = canEditStatus ? `
-    <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end; align-items:center;">
-      <select onchange="updatePropostaStatus(${x.id}, this.value)" style="padding:8px 10px; border-radius:10px; border:1px solid #e2e8f0; background:#f4f6f9; font-weight:700;">
-        ${["Enviada","Em Negociação","Validação Gestão","Fechada","Perdida"].map(s => `<option value="${s}" ${(status===s)?"selected":""}>${s}</option>`).join("")}
+    <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end; align-items:center; flex-wrap:wrap;">
+      <select onchange="updatePropostaStatus(${x.id}, this.value)" style="padding:8px 10px; border-radius:10px; border:1px solid #e2e8f0; background:#f4f6f9; font-weight:700; font-size:13px;">
+        ${allStatuses.map(s => `<option value="${s}" ${status===s?"selected":""}>${getStatusLabel(s)}</option>`).join("")}
       </select>
-    </div>
-  ` : "";
-  const perdaBox = (status === "Perdida") ? `
+    </div>` : "";
+
+  const perdaBox = (status === "perdida") ? `
     <div style="margin-top:10px;">
       <label style="font-size:12px; color:#64748b; font-weight:800; display:block; margin-bottom:6px;">Justificativa da perda</label>
-      <textarea id="perda-${x.id}" rows="3" ${canEditPerda ? "" : "readonly"} oninput="updateJustificativaPerda(${x.id}, this.value)" placeholder="Descreva o motivo da perda...">${x.justificativaPerda || ""}</textarea>
-    </div>
-  ` : "";
+      <textarea id="perda-${x.id}" rows="3" ${canEditPerda?"":"readonly"} oninput="updateJustificativaPerda(${x.id}, this.value)" placeholder="Descreva o motivo da perda...">${x.justificativaPerda||""}</textarea>
+    </div>` : "";
+
+  // Desconto info (spec fields)
+  const temSolicitacao = x.descontoSolicitadoPercentual > 0;
+  const temAprovacao   = x.descontoAutorizadoPercentual > 0;
+  let descontoBox = "";
+  if (temSolicitacao || temAprovacao) {
+    const dSol = x.dataSolicitacaoDesconto ? new Date(x.dataSolicitacaoDesconto).toLocaleString('pt-BR') : "";
+    const dApv = x.dataAprovacaoDesconto ? new Date(x.dataAprovacaoDesconto).toLocaleString('pt-BR') : "";
+    descontoBox = `<div class="desc-info">
+      <div style="font-weight:800; color:var(--ca-primary); margin-bottom:5px;"><i class="ph ph-percent"></i> Desconto</div>
+      ${temSolicitacao ? `<div>Solicitado por <b>${x.solicitadoPor||"—"}</b>: ${x.descontoSolicitadoPercentual.toFixed(1)}% = <b>${brl.format(x.descontoSolicitadoValor)}</b> ${dSol ? "em "+dSol : ""}</div>` : ""}
+      ${temAprovacao ? `<div style="color:var(--ca-success);">Autorizado por <b>${x.aprovadoPor||"—"}</b>: ${x.descontoAutorizadoPercentual.toFixed(1)}% = <b>${brl.format(x.descontoAutorizadoValor)}</b> ${dApv ? "em "+dApv : ""}</div>` : ""}
+      ${x.valorFinal > 0 ? `<div style="margin-top:4px; font-weight:900; color:var(--ca-success);">Valor final: ${brl.format(x.valorFinal)}</div>` : ""}
+    </div>`;
+  }
+
+  // Ações de desconto
+  let descAcao = "";
+  if ((status === "enviada_cliente" || status === "em_negociacao") && (isOwner || isGestor)) {
+    descAcao = `<button class="btn-outline" onclick="abrirSolicitar(${x.id})" style="margin-top:8px; border-color:var(--ca-accent); color:var(--ca-accent); width:100%; justify-content:center; display:flex; align-items:center; gap:6px;"><i class="ph ph-percent"></i> Solicitar Desconto</button>`;
+  }
+  if (status === "validacao_gestao" && isGestor) {
+    descAcao = `<button class="btn-warning" onclick="abrirAnalisar(${x.id})" style="margin-top:8px; width:100%; justify-content:center; display:flex; align-items:center; gap:6px;"><i class="ph ph-check-square"></i> Analisar Desconto</button>`;
+  }
+  if (status === "desconto_aprovado" && (isOwner || isGestor)) {
+    descAcao = `<button class="btn-success" onclick="reemitirComDesconto(${x.id})" style="margin-top:8px; width:100%; justify-content:center; display:flex; align-items:center; gap:6px;"><i class="ph ph-arrow-clockwise"></i> Reemitir com Desconto</button>`;
+  }
+
+  const valorExibir = (x.valorFinal > 0 && status !== "enviada_cliente") ? x.valorFinal : x.total;
+  const labelOriginal = (x.valorFinal > 0 && status !== "enviada_cliente") ? `<span style="font-size:11px; color:var(--ca-text-muted); display:block;">original: ${brl.format(x.valorOriginal||x.total)}</span>` : "";
+
   return `
-    <div class="historico-card" id="proposta-${x.id}">
+    <div class="historico-card ${isPendente?"card-pendente":""}" id="proposta-${x.id}">
       <div class="historico-info" style="flex:1;">
-        <h4 style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">${x.cliente}<span class="status-pill">${status}</span><span class="status-pill" style="border-color: var(--ca-accent); color: var(--ca-accent);">#${ticket}</span></h4>
+        <h4 style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">${x.cliente}<span class="status-pill ${pillClass}">${label}</span><span class="status-pill" style="border-color:var(--ca-accent); color:var(--ca-accent);">#${ticket}</span></h4>
         <p>${x.dataLabel} | Ticket: ${ticket} | CNPJ: ${x.cnpj}</p>
-        ${isAdmin ? `<p style="color:var(--ca-primary)"><i class="ph ph-user"></i> ${x.consultorNome} — ${x.consultorEmail}</p>` : ''}
+        ${isAdmin ? `<p style="color:var(--ca-primary)"><i class="ph ph-user"></i> ${x.consultorNome} — ${x.consultorEmail}</p>` : ""}
         <p style="font-size:12px"><i class="ph ph-tag"></i> ${x.tipoProposta}</p>
         <p style="font-size:12px; color:#94a3b8;">Atualizado: ${updated}</p>
         ${perdaBox}
+        ${descontoBox}
       </div>
       <div class="historico-valor" style="text-align:right; min-width:260px;">
-        <span class="valor">${brl.format(x.total)}</span>
+        <span class="valor">${brl.format(valorExibir)}</span>
+        ${labelOriginal}
         <button class="btn-outline" onclick="duplicarProposta(${x.id})" style="margin-top:8px"><i class="ph ph-copy"></i> Duplicar</button>
         <button class="btn-outline" onclick="reemitirPropostaPdf(${x.id})" style="margin-top:8px"><i class="ph ph-file-pdf"></i> Reemitir PDF</button>
+        ${descAcao}
         ${statusControl}
       </div>
     </div>`;
 }
 
-function duplicarProposta(id) {
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || '[]');
+async function duplicarProposta(id) {
+  const h = await sbGetPropostas();
   const p = h.find(x => x.id === id);
   if (!p) return;
   switchTab('demandas', null);
@@ -1709,15 +2071,15 @@ function duplicarProposta(id) {
   alert("Dados básicos do cliente carregados. Refaça o orçamento para garantir os valores vigentes.");
 }
 
-function limparHistorico() {
-  const session = getSession();
-  if (session?.role !== "admin") return alert("Apenas administrador pode apagar a base.");
-  if (confirm("ATENÇÃO: Apagar TODA a base de propostas deste navegador?")) {
-    localStorage.removeItem(LS_PROPOSTAS);
-    renderizarHistoricos();
-    renderAdminDashboard();
+async function limparHistorico() {
+    const session = getSession();
+    if (session?.role !== "admin") return alert("Apenas administrador pode apagar a base.");
+    if (confirm("ATENÇÃO: Apagar TODA a base de propostas do banco de dados?")) {
+      await sb.from("propostas").delete().neq("id", 0);
+      await renderizarHistoricos();
+      renderAdminDashboard();
+    }
   }
-}
 
 // =========================
 // DASHBOARD ADMIN
@@ -1726,28 +2088,28 @@ function kpiCard(label, value) {
   return `<div class="resumo-item"><span>${label}</span><strong>${value}</strong></div>`;
 }
 
-function renderAdminDashboard() {
+async function renderAdminDashboard() {
   const session = getSession();
   if (session?.role !== "admin") return;
   const kpiBox = document.getElementById("adminKpis");
   if (!kpiBox) return;
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
+  const h = await sbGetPropostas();
   const filtroConsultor = document.getElementById("filtroConsultor")?.value || "";
   const filtroStatus = document.getElementById("filtroStatus")?.value || "";
   const filtroEmpresa = (document.getElementById("filtroEmpresa")?.value || "").toLowerCase();
   const { start, end } = getAdminDateRange();
   const filtered = h.filter(p => {
     const matchConsultor = !filtroConsultor || p.consultorEmail === filtroConsultor;
-    const matchStatus = !filtroStatus || (p.status || "Enviada") === filtroStatus;
+    const matchStatus = !filtroStatus || (p.status || "enviada_cliente") === filtroStatus;
     const matchEmpresa = !filtroEmpresa || (p.cliente || "").toLowerCase().includes(filtroEmpresa) || (p.cnpj || "").includes(filtroEmpresa) || (p.ticket || "").toLowerCase().includes(filtroEmpresa);
     const matchData = matchDateRange(p.dataISO, start, end);
     return matchConsultor && matchStatus && matchEmpresa && matchData;
   });
   const total = filtered.length;
-  const fechadas = filtered.filter(p => (p.status || "Enviada") === "Fechada").length;
-  const perdidas = filtered.filter(p => (p.status || "Enviada") === "Perdida").length;
-  const emNeg = filtered.filter(p => (p.status || "Enviada") === "Em Negociação").length;
-  const emGestao = filtered.filter(p => (p.status || "Enviada") === "Validação Gestão").length;
+  const fechadas = filtered.filter(p => p.status === "fechada").length;
+  const perdidas = filtered.filter(p => p.status === "perdida").length;
+  const emNeg = filtered.filter(p => p.status === "em_negociacao").length;
+  const emGestao = filtered.filter(p => p.status === "validacao_gestao").length;
   const soma = filtered.reduce((acc, p) => acc + (Number(p.total) || 0), 0);
   const ticketMedio = total ? (soma / total) : 0;
   const taxaFech = total ? (fechadas / total) : 0;
@@ -1756,7 +2118,7 @@ function renderAdminDashboard() {
     ${kpiCard("Valor Total (R$)", brl.format(soma))}
     ${kpiCard("Fechadas", fechadas)}
     ${kpiCard("Em Negociação", emNeg)}
-    ${kpiCard("Validação Gestão", emGestao)}
+    ${kpiCard("Val. Gestão", emGestao)}
     ${kpiCard("Ticket Médio", brl.format(ticketMedio))}
     ${kpiCard("Taxa de Fechamento", (taxaFech * 100).toFixed(1) + "%")}
     ${kpiCard("Perdidas", perdidas)}
@@ -1766,17 +2128,17 @@ function renderAdminDashboard() {
 // =========================
 // EXPORT CSV
 // =========================
-function exportAdminCSV() {
+async function exportAdminCSV() {
   const session = getSession();
   if (session?.role !== "admin") return alert("Apenas administrador pode exportar.");
-  const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || "[]");
+  const h = await sbGetPropostas();
   const filtroConsultor = document.getElementById("filtroConsultor")?.value || "";
   const filtroStatus = document.getElementById("filtroStatus")?.value || "";
   const filtroEmpresa = (document.getElementById("filtroEmpresa")?.value || "").toLowerCase();
   const { start, end } = getAdminDateRange();
   const filtered = h.filter(p => {
     const matchConsultor = !filtroConsultor || p.consultorEmail === filtroConsultor;
-    const matchStatus = !filtroStatus || (p.status || "Enviada") === filtroStatus;
+    const matchStatus = !filtroStatus || (p.status || "enviada_cliente") === filtroStatus;
     const matchEmpresa = !filtroEmpresa || (p.cliente || "").toLowerCase().includes(filtroEmpresa) || (p.cnpj || "").includes(filtroEmpresa) || (p.ticket || "").toLowerCase().includes(filtroEmpresa);
     const matchData = matchDateRange(p.dataISO, start, end);
     return matchConsultor && matchStatus && matchEmpresa && matchData;
@@ -1785,7 +2147,7 @@ function exportAdminCSV() {
   const rows = filtered.map(p => ([
     p.ticket || "", p.dataLabel || "", p.cliente || "", p.cnpj || "", p.uf || "", p.porte || "",
     p.consultorNome || "", p.consultorEmail || "", p.consultorTelefone || "", p.regime || "",
-    (Number(p.total) || 0).toFixed(2).replace(".", ","), p.status || "Enviada",
+    (Number(p.total) || 0).toFixed(2).replace(".", ","), getStatusLabel(p.status || "enviada_cliente"),
     p.statusUpdatedAt ? new Date(p.statusUpdatedAt).toLocaleString("pt-BR") : "",
     (p.justificativaPerda || "").replace(/\n/g, " ")
   ]));
@@ -1803,49 +2165,49 @@ function exportAdminCSV() {
 // =========================
 // GESTÃO DE USUÁRIOS (Admin)
 // =========================
-function cadastrarNovoUsuario() {
+async function cadastrarNovoUsuario() {
   const nome = document.getElementById("newUserNome")?.value.trim();
   const email = document.getElementById("newUserEmail")?.value.trim().toLowerCase();
   const senha = document.getElementById("newUserSenha")?.value;
   const role = document.getElementById("newUserRole")?.value || "lider";
   const erroEl = document.getElementById("newUserErro");
+  if (erroEl) erroEl.style.display = "none";
 
-  if (!nome || nome.length < 3) { erroEl.textContent = "Nome precisa ter ao menos 3 caracteres."; erroEl.style.display = "block"; return; }
-  if (!isValidVillelaEmail(email)) { erroEl.textContent = "E-mail inválido. Use o domínio @grupovillela.com"; erroEl.style.display = "block"; return; }
-  if (!senha || senha.length < 6) { erroEl.textContent = "Senha precisa ter ao menos 6 caracteres."; erroEl.style.display = "block"; return; }
+  if (!nome || nome.length < 3) { if (erroEl) { erroEl.textContent = "Nome precisa ter ao menos 3 caracteres."; erroEl.style.display = "block"; } return; }
+  if (!email || !email.includes("@")) { if (erroEl) { erroEl.textContent = "Informe um e-mail válido."; erroEl.style.display = "block"; } return; }
+  if (!senha || senha.length < 6) { if (erroEl) { erroEl.textContent = "Senha precisa ter ao menos 6 caracteres."; erroEl.style.display = "block"; } return; }
 
-  const users = getUsers();
-  const exists = users.find(u => (u.email || "").toLowerCase() === email);
-  if (exists) { erroEl.textContent = "Este e-mail já está cadastrado."; erroEl.style.display = "block"; return; }
+  const exists = await sbGetUsuarioByEmail(email);
+  if (exists) { if (erroEl) { erroEl.textContent = "Este e-mail já está cadastrado."; erroEl.style.display = "block"; } return; }
 
-  users.push({ id: Date.now(), nome, email, senha, role, telefone: "" });
-  saveUsers(users);
+  await sbSaveUsuario({ nome, email, senha, role, telefone: "" });
+  await refreshUsersCache();
 
-  erroEl.style.display = "none";
   document.getElementById("newUserNome").value = "";
   document.getElementById("newUserEmail").value = "";
   document.getElementById("newUserSenha").value = "";
   document.getElementById("newUserRole").value = "lider";
 
-  renderTabelaUsuarios();
+  await renderTabelaUsuarios();
   alert(`Usuário "${nome}" cadastrado com sucesso!`);
 }
 
-function excluirUsuario(email) {
+async function excluirUsuario(email) {
   const session = getSession();
   if ((session?.email || "").toLowerCase() === email.toLowerCase()) {
     alert("Você não pode excluir a própria conta enquanto está logado.");
     return;
   }
   if (!confirm(`Excluir o usuário ${email}? Esta ação não pode ser desfeita.`)) return;
-  const users = getUsers().filter(u => (u.email || "").toLowerCase() !== email.toLowerCase());
-  saveUsers(users);
-  renderTabelaUsuarios();
+  await sbDeleteUsuario(email);
+  await refreshUsersCache();
+  await renderTabelaUsuarios();
 }
 
-function renderTabelaUsuarios() {
+async function renderTabelaUsuarios() {
   const tbody = document.getElementById("tbodyUsuarios");
   if (!tbody) return;
+  await refreshUsersCache();
   const users = getUsers();
   if (users.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:20px;">Nenhum usuário cadastrado.</td></tr>`;
@@ -2126,7 +2488,7 @@ async function gerarPdfPropostaPadrao(propostaId = null, opts = {}) {
   const overlay = document.getElementById('pdfLoadingOverlay');
   overlay.style.display = 'flex';
   try {
-    const h = JSON.parse(localStorage.getItem(LS_PROPOSTAS) || '[]');
+    const h = await sbGetPropostas();
     if (h.length === 0) { alert("Nenhuma proposta encontrada."); overlay.style.display = 'none'; return; }
 
     let proposta = null;
@@ -2258,7 +2620,15 @@ async function gerarPdfPropostaPadrao(propostaId = null, opts = {}) {
 
     writeLine("3. Investimento", MARGIN_LEFT, fontBold, 11, 'left');
     currentY -= 2;
-    drawWrappedText(`Valor total do projeto (honorários + repasses): ${brl.format(proposta.total || 0)}`, MARGIN_LEFT, fontBold, 11, 'left');
+    const hasDescAprovado = opts.comDesconto && proposta.descontoAutorizadoPercentual > 0;
+    const valorExibirPDF = hasDescAprovado ? proposta.valorFinal : (proposta.total || 0);
+    if (hasDescAprovado) {
+      drawWrappedText(`Valor original: ${brl.format(proposta.valorOriginal || proposta.total || 0)}`, MARGIN_LEFT, fontReg, 10.5, 'left');
+      drawWrappedText(`Desconto autorizado: ${proposta.descontoAutorizadoPercentual.toFixed(1)}% (${brl.format(proposta.descontoAutorizadoValor || 0)})`, MARGIN_LEFT, fontReg, 10.5, 'left');
+      drawWrappedText(`Valor total com desconto: ${brl.format(valorExibirPDF)}`, MARGIN_LEFT, fontBold, 11, 'left');
+    } else {
+      drawWrappedText(`Valor total do projeto (honorários + repasses): ${brl.format(valorExibirPDF)}`, MARGIN_LEFT, fontBold, 11, 'left');
+    }
     currentY -= 12;
 
     writeLine("4. Condições Comerciais e Pagamento", MARGIN_LEFT, fontBold, 11, 'left');
@@ -2592,6 +2962,434 @@ function ecacApplyToCart() {
   switchTab('demandas', null);
   alert("Importação aplicada ao carrinho de omissões. Você pode complementar manualmente e seguir com o orçamento.");
 }
+
+
+// =========================
+// DESCONTO — STATUS CONSTANTS
+// =========================
+const STATUS_PROPOSTA = {
+  RASCUNHO:          "rascunho",
+  VALIDACAO_GESTAO:  "validacao_gestao",
+  DESCONTO_APROVADO: "desconto_aprovado",
+  DESCONTO_RECUSADO: "desconto_recusado",
+  REEMITIDA:         "reemitida",
+  ENVIADA_CLIENTE:   "enviada_cliente",
+  FECHADA:           "fechada",
+  PERDIDA:           "perdida"
+};
+
+// =========================
+// DESCONTO — SOLICITAR (CONSULTOR)
+// =========================
+let _descPropostaId = null;
+
+async function abrirSolicitar(propostaId) {
+  const h = await sbGetPropostas();
+  const p = h.find(x => x.id === propostaId);
+  if (!p) return alert("Proposta não encontrada.");
+  _descPropostaId = propostaId;
+
+  const valorOriginal = p.valorOriginal || p.total;
+  document.getElementById("solValorOriginal").value = brl.format(valorOriginal);
+  document.getElementById("solPct").value = p.descontoSolicitadoPercentual > 0 ? p.descontoSolicitadoPercentual : "";
+  document.getElementById("solValorRs").value = "";
+  document.getElementById("solValorFinal").value = "";
+  document.getElementById("solJustificativa").value = "";
+  const erroEl = document.getElementById("solErro");
+  if (erroEl) erroEl.style.display = "none";
+
+  const overlay = document.getElementById("modalSolicitarDesconto");
+  overlay._valorOriginal = valorOriginal;
+  overlay.style.display = "flex";
+  calcSolicitacao();
+}
+
+function calcSolicitacao() {
+  const overlay = document.getElementById("modalSolicitarDesconto");
+  const valorOriginal = overlay._valorOriginal || 0;
+  const pct = parseFloat(document.getElementById("solPct")?.value || "0") || 0;
+  const descontoValor = valorOriginal * (pct / 100);
+  const valorFinal = valorOriginal - descontoValor;
+  document.getElementById("solValorRs").value = brl.format(descontoValor);
+  document.getElementById("solValorFinal").value = brl.format(valorFinal > 0 ? valorFinal : 0);
+}
+
+function fecharModalSolicitar() {
+  document.getElementById("modalSolicitarDesconto").style.display = "none";
+  _descPropostaId = null;
+}
+
+async function confirmarSolicitarDesconto() {
+  const erroEl = document.getElementById("solErro");
+  erroEl.style.display = "none";
+
+  const overlay = document.getElementById("modalSolicitarDesconto");
+  const valorOriginal = overlay._valorOriginal || 0;
+  const pct = parseFloat(document.getElementById("solPct")?.value || "0") || 0;
+  const justificativa = (document.getElementById("solJustificativa")?.value || "").trim();
+
+  if (pct <= 0 || pct > 100) {
+    erroEl.textContent = "Informe um percentual entre 0,1% e 100%.";
+    erroEl.style.display = "block";
+    return;
+  }
+  if (!justificativa || justificativa.length < 10) {
+    erroEl.textContent = "Informe uma justificativa com ao menos 10 caracteres.";
+    erroEl.style.display = "block";
+    return;
+  }
+
+  const session = getSession();
+  const agora = new Date().toISOString();
+  const h = await sbGetPropostas();
+  const p = h.find(x => x.id === _descPropostaId);
+  if (!p) return;
+
+  const descontoSolicitadoValor = valorOriginal * (pct / 100);
+
+  // historico entry
+  const novoHistorico = [...(p.historico || []), {
+    data: agora,
+    evento: `Desconto solicitado (${pct.toFixed(1)}%)`,
+    usuario: session?.nome || session?.email || ""
+  }];
+
+  await sbUpdateProposta(_descPropostaId, {
+    status: STATUS_PROPOSTA.VALIDACAO_GESTAO,
+    status_updated_at: agora,
+    valor_original: valorOriginal,
+    desconto_solicitado_percentual: pct,
+    desconto_solicitado_valor: descontoSolicitadoValor,
+    solicitado_por: session?.email || "",
+    data_solicitacao_desconto: agora,
+    historico_desconto: novoHistorico
+  });
+
+  fecharModalSolicitar();
+  await renderizarHistoricos();
+  renderAdminDashboard();
+  atualizarNotificacoes();
+  alert("Solicitação enviada para a gestão!");
+}
+
+// =========================
+// DESCONTO — ANALISAR (GESTOR)
+// =========================
+async function abrirAnalisar(propostaId) {
+  const h = await sbGetPropostas();
+  const p = h.find(x => x.id === propostaId);
+  if (!p) return alert("Proposta não encontrada.");
+  _descPropostaId = propostaId;
+
+  const valorOriginal = p.valorOriginal || p.total;
+  const pctSol = p.descontoSolicitadoPercentual || 0;
+  const valSol = p.descontoSolicitadoValor || 0;
+  const dSol = p.dataSolicitacaoDesconto ? new Date(p.dataSolicitacaoDesconto).toLocaleString('pt-BR') : "—";
+
+  document.getElementById("apvResumo").innerHTML = `
+    <div><b>Cliente:</b> ${p.cliente}</div>
+    <div><b>Consultor:</b> ${p.consultorNome} (${p.consultorEmail})</div>
+    <div><b>Ticket:</b> ${p.ticket}</div>
+    <div><b>Valor Original:</b> ${brl.format(valorOriginal)}</div>
+    <div><b>Desconto Solicitado:</b> ${pctSol.toFixed(1)}% = ${brl.format(valSol)}</div>
+    <div><b>Valor Pretendido:</b> ${brl.format(valorOriginal - valSol)}</div>
+    <div><b>Solicitado em:</b> ${dSol}</div>
+    ${p.solicitadoPor ? `<div><b>Solicitado por:</b> ${p.solicitadoPor}</div>` : ""}
+  `;
+
+  document.getElementById("apvPct").value = pctSol.toFixed(1);
+  document.getElementById("apvObservacao").value = "";
+
+  const overlay = document.getElementById("modalAnalisarDesconto");
+  overlay._valorOriginal = valorOriginal;
+  overlay._pctSolicitado = pctSol;
+  overlay.style.display = "flex";
+  calcAprovacao();
+}
+
+function calcAprovacao() {
+  const overlay = document.getElementById("modalAnalisarDesconto");
+  const valorOriginal = overlay._valorOriginal || 0;
+  const pct = parseFloat(document.getElementById("apvPct")?.value || "0") || 0;
+  const descontoValor = valorOriginal * (pct / 100);
+  document.getElementById("apvValorRs").value = brl.format(descontoValor);
+  document.getElementById("apvValorFinal").value = brl.format(Math.max(0, valorOriginal - descontoValor));
+}
+
+function fecharModalAnalisar() {
+  document.getElementById("modalAnalisarDesconto").style.display = "none";
+  _descPropostaId = null;
+}
+
+async function decidirDesconto(acao) {
+  if (!_descPropostaId) return;
+  const overlay = document.getElementById("modalAnalisarDesconto");
+  const valorOriginal = overlay._valorOriginal || 0;
+  const session = getSession();
+  const agora = new Date().toISOString();
+
+  const h = await sbGetPropostas();
+  const p = h.find(x => x.id === _descPropostaId);
+  if (!p) return;
+
+  const observacao = (document.getElementById("apvObservacao")?.value || "").trim();
+  let pctAuth = 0, valorAuth = 0, novoStatus = "";
+
+  if (acao === "recusar") {
+    novoStatus = STATUS_PROPOSTA.DESCONTO_RECUSADO;
+  } else {
+    pctAuth = parseFloat(document.getElementById("apvPct")?.value || "0") || 0;
+    if (pctAuth <= 0) { alert("Informe o percentual de desconto a autorizar."); return; }
+    valorAuth = valorOriginal * (pctAuth / 100);
+    novoStatus = STATUS_PROPOSTA.DESCONTO_APROVADO;
+  }
+
+  // proposta.valorFinal = valorOriginal * (1 - descontoAutorizadoPercentual / 100)
+  const valorFinal = acao === "recusar" ? 0 : (valorOriginal * (1 - pctAuth / 100));
+
+  const novoHistorico = [...(p.historico || []), {
+    data: agora,
+    evento: acao === "recusar"
+      ? "Desconto recusado"
+      : `Desconto autorizado (${pctAuth.toFixed(1)}%)`,
+    usuario: session?.nome || session?.email || "",
+    observacao: observacao || ""
+  }];
+
+  await sbUpdateProposta(_descPropostaId, {
+    status: novoStatus,
+    status_updated_at: agora,
+    desconto_autorizado_percentual: pctAuth,
+    desconto_autorizado_valor: valorAuth,
+    valor_final: valorFinal,
+    aprovado_por: session?.email || "",
+    data_aprovacao_desconto: agora,
+    historico_desconto: novoHistorico
+  });
+
+  fecharModalAnalisar();
+  await renderizarHistoricos();
+  renderAdminDashboard();
+  atualizarNotificacoes();
+
+  const msg = acao === "recusar"
+    ? "Desconto recusado. O consultor será notificado."
+    : `Desconto de ${pctAuth.toFixed(1)}% autorizado!`;
+  alert(msg);
+}
+
+// =========================
+// DESCONTO — REEMISSÃO
+// =========================
+async function reemitirComDesconto(propostaId) {
+  const h = await sbGetPropostas();
+  const p = h.find(x => x.id === propostaId);
+  if (!p || p.status !== STATUS_PROPOSTA.DESCONTO_APROVADO) {
+    return alert("Esta proposta não possui desconto aprovado.");
+  }
+  const dias = prompt("Prazo de validade da proposta (em dias):", "10");
+  if (dias === null) return;
+  const n = parseInt(dias, 10);
+  const validityDays = (Number.isFinite(n) && n > 0) ? n : 10;
+
+  const session = getSession();
+  const agora = new Date().toISOString();
+
+  // proposta.valorFinal = valorOriginal * (1 - descontoAutorizadoPercentual / 100)
+  const novoHistorico = [...(p.historico || []), {
+    data: agora,
+    evento: "Proposta reemitida com desconto",
+    usuario: session?.nome || session?.email || ""
+  }];
+
+  await sbUpdateProposta(propostaId, {
+    status: STATUS_PROPOSTA.REEMITIDA,
+    status_updated_at: agora,
+    historico_desconto: novoHistorico
+  });
+
+  await gerarPdfPropostaPadrao(propostaId, { validityDays, comDesconto: true });
+  await renderizarHistoricos();
+  renderAdminDashboard();
+  atualizarNotificacoes();
+}
+
+// =========================
+// DESCONTO — NOTIFICAÇÕES
+// =========================
+async function atualizarNotificacoes() {
+  const session = getSession();
+  if (!session) return;
+  const h = await sbGetPropostas();
+
+  if (session.role === "admin") {
+    // Gestor: pendentes de validação
+    const pendentes = h.filter(p => p.status === STATUS_PROPOSTA.VALIDACAO_GESTAO).length;
+    const badgeAdmin = document.getElementById("notifBadgeAdmin");
+    const badgeDesc  = document.getElementById("notifBadgeDescontos");
+    if (badgeAdmin) { badgeAdmin.textContent = pendentes||""; badgeAdmin.style.display = pendentes ? "inline-flex" : "none"; }
+    if (badgeDesc)  { badgeDesc.textContent  = pendentes||""; badgeDesc.style.display  = pendentes ? "inline-flex" : "none"; }
+  } else {
+    // Consultor: propostas com decisão aguardando ação dele
+    const email = session.email;
+    const aguardando = h.filter(p =>
+      p.consultorEmail === email &&
+      (p.status === STATUS_PROPOSTA.DESCONTO_APROVADO || p.status === STATUS_PROPOSTA.DESCONTO_RECUSADO)
+    ).length;
+    const badge = document.getElementById("notifBadgeConsultor");
+    if (badge) { badge.textContent = aguardando||""; badge.style.display = aguardando ? "inline-flex" : "none"; }
+  }
+}
+
+// =========================
+// DESCONTO — DASHBOARD PANEL
+// =========================
+async function renderDescontosPanel() {
+  const wrap = document.getElementById("descontosTableWrap");
+  const kpisEl = document.getElementById("descontoKpis");
+  if (!wrap) return;
+
+  const h = await sbGetPropostas();
+  const comDesc = h.filter(p =>
+    p.descontoSolicitadoPercentual > 0 || p.descontoAutorizadoPercentual > 0 ||
+    [STATUS_PROPOSTA.VALIDACAO_GESTAO, STATUS_PROPOSTA.DESCONTO_APROVADO,
+     STATUS_PROPOSTA.DESCONTO_RECUSADO, STATUS_PROPOSTA.REEMITIDA].includes(p.status)
+  );
+
+  // Populate consultant filter
+  const filtroConsSel = document.getElementById("filtroDescConsultor");
+  if (filtroConsSel) {
+    const cur = filtroConsSel.value;
+    const uniq = [...new Map(comDesc.filter(p => p.consultorEmail).map(p => [p.consultorEmail, {email: p.consultorEmail, nome: p.consultorNome}])).values()];
+    filtroConsSel.innerHTML = `<option value="">Todos</option>` + uniq.sort((a,b)=>(a.nome||"").localeCompare(b.nome||"")).map(u => `<option value="${u.email}" ${cur===u.email?"selected":""}>${u.nome}</option>`).join("");
+  }
+
+  // Read filters
+  const fCons   = document.getElementById("filtroDescConsultor")?.value || "";
+  const fStatus = document.getElementById("filtroDescStatus")?.value || "";
+  const fFaixa  = document.getElementById("filtroDescFaixa")?.value || "";
+  const fBusca  = (document.getElementById("filtroDescBusca")?.value || "").toLowerCase();
+  const de      = document.getElementById("filtroDescDe")?.value || "";
+  const ate     = document.getElementById("filtroDescAte")?.value || "";
+  const startD  = de  ? new Date(de  + "T00:00:00") : null;
+  const endD    = ate ? new Date(ate + "T23:59:59") : null;
+
+  const filtered = comDesc.filter(p => {
+    if (fCons   && p.consultorEmail !== fCons) return false;
+    if (fStatus && p.status !== fStatus) return false;
+    if (fBusca  && !(p.cliente||"").toLowerCase().includes(fBusca) && !(p.consultorNome||"").toLowerCase().includes(fBusca)) return false;
+    if (!matchDateRange(p.dataSolicitacaoDesconto || p.dataISO, startD, endD)) return false;
+    if (fFaixa) {
+      const pct = p.descontoAutorizadoPercentual || p.descontoSolicitadoPercentual || 0;
+      if (fFaixa === "0-5"  && (pct <  0 || pct >= 5))  return false;
+      if (fFaixa === "5-10" && (pct <  5 || pct >= 10)) return false;
+      if (fFaixa === "10+"  && pct < 10)                 return false;
+    }
+    return true;
+  });
+
+  // KPIs — indicadores gerenciais (spec item 11)
+  const pendentes  = filtered.filter(p => p.status === STATUS_PROPOSTA.VALIDACAO_GESTAO).length;
+  const aprovados  = filtered.filter(p => [STATUS_PROPOSTA.DESCONTO_APROVADO, STATUS_PROPOSTA.REEMITIDA].includes(p.status)).length;
+  const recusados  = filtered.filter(p => p.status === STATUS_PROPOSTA.DESCONTO_RECUSADO).length;
+  const totalConc  = filtered.reduce((a, p) => a + (p.descontoAutorizadoValor || 0), 0);
+  const listApv    = filtered.filter(p => p.descontoAutorizadoPercentual > 0);
+  const mediaPct   = listApv.length ? listApv.reduce((a, p) => a + p.descontoAutorizadoPercentual, 0) / listApv.length : 0;
+
+  if (kpisEl) {
+    kpisEl.style.gridTemplateColumns = "repeat(3,1fr)";
+    kpisEl.innerHTML = `
+      ${kpiCard("Pendentes Validação", `<span style="color:#f59e0b;font-size:20px;font-weight:900;">${pendentes}</span>`)}
+      ${kpiCard("Aprovados", `<span style="color:var(--ca-success);font-size:20px;font-weight:900;">${aprovados}</span>`)}
+      ${kpiCard("Recusados", `<span style="color:var(--ca-danger);font-size:20px;font-weight:900;">${recusados}</span>`)}
+      ${kpiCard("Total Concedido (R$)", brl.format(totalConc))}
+      ${kpiCard("Média % Concedida", mediaPct.toFixed(1) + "%")}
+      ${kpiCard("Propostas com Desconto", filtered.length)}
+    `;
+  }
+
+  if (filtered.length === 0) {
+    wrap.innerHTML = `<p style="text-align:center; color:#999; padding:30px;">Nenhuma proposta com desconto encontrada.</p>`;
+    return;
+  }
+
+  // Tabela (spec item 10 — todos os campos)
+  const rows = filtered.map(p => {
+    const pill = getStatusPillClass(p.status);
+    const lbl  = getStatusLabel(p.status);
+    const dSol = p.dataSolicitacaoDesconto ? new Date(p.dataSolicitacaoDesconto).toLocaleDateString('pt-BR') : "—";
+    const dApv = p.dataAprovacaoDesconto   ? new Date(p.dataAprovacaoDesconto).toLocaleDateString('pt-BR')   : "—";
+    const acaoBtn = p.status === STATUS_PROPOSTA.VALIDACAO_GESTAO
+      ? `<button class="btn-warning" onclick="abrirAnalisar(${p.id})" style="border:none; border-radius:7px; padding:5px 10px; cursor:pointer; font-size:12px; font-family:'Outfit',sans-serif; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ph ph-check-square"></i> Analisar</button>`
+      : `<span style="font-size:12px; color:#94a3b8;">—</span>`;
+    return `<tr>
+      <td><strong>${p.cliente}</strong><br><span style="font-size:11px; color:#94a3b8;">${p.ticket}</span></td>
+      <td>${p.consultorNome}<br><span style="font-size:11px; color:#94a3b8;">${p.consultorEmail}</span></td>
+      <td style="text-align:right;">${brl.format(p.valorOriginal || p.total)}</td>
+      <td style="text-align:right;">${p.descontoSolicitadoPercentual ? p.descontoSolicitadoPercentual.toFixed(1)+"%" : "—"}</td>
+      <td style="text-align:right;">${p.descontoSolicitadoValor ? brl.format(p.descontoSolicitadoValor) : "—"}</td>
+      <td style="text-align:right;">${p.descontoAutorizadoPercentual ? p.descontoAutorizadoPercentual.toFixed(1)+"%" : "—"}</td>
+      <td style="text-align:right;">${p.descontoAutorizadoValor ? brl.format(p.descontoAutorizadoValor) : "—"}</td>
+      <td style="text-align:right;font-weight:800;">${p.valorFinal > 0 ? brl.format(p.valorFinal) : brl.format(p.total)}</td>
+      <td><span class="status-pill ${pill}">${lbl}</span></td>
+      <td>${dSol}</td>
+      <td>${dApv}</td>
+      <td style="font-size:12px;">${p.aprovadoPor || "—"}</td>
+      <td>${acaoBtn}</td>
+    </tr>`;
+  }).join("");
+
+  wrap.innerHTML = `
+    <table class="desc-table">
+      <thead><tr>
+        <th>Cliente / Ticket</th>
+        <th>Consultor</th>
+        <th>Valor Original</th>
+        <th>Sol. %</th>
+        <th>Sol. R$</th>
+        <th>Aut. %</th>
+        <th>Aut. R$</th>
+        <th>Valor Final</th>
+        <th>Status</th>
+        <th>Solicitado</th>
+        <th>Decidido</th>
+        <th>Aprovado por</th>
+        <th>Ação</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// =========================
+// DESCONTO — EXPORT CSV
+// =========================
+async function exportDescontosCSV() {
+  const h = await sbGetPropostas();
+  const comDesc = h.filter(p => p.descontoSolicitadoPercentual > 0 || p.descontoAutorizadoPercentual > 0);
+  const headers = ["Ticket","Cliente","CNPJ","Consultor","Email Consultor",
+    "Valor Original","Desc Sol %","Desc Sol R$","Desc Aut %","Desc Aut R$",
+    "Valor Final","Status","Solicitado Por","Aprovado Por",
+    "Data Solicitacao","Data Aprovacao"];
+  const rows = comDesc.map(p => [
+    p.ticket, p.cliente, p.cnpj, p.consultorNome, p.consultorEmail,
+    (p.valorOriginal||p.total).toFixed(2),
+    (p.descontoSolicitadoPercentual||0).toFixed(2),
+    (p.descontoSolicitadoValor||0).toFixed(2),
+    (p.descontoAutorizadoPercentual||0).toFixed(2),
+    (p.descontoAutorizadoValor||0).toFixed(2),
+    (p.valorFinal||p.total).toFixed(2),
+    getStatusLabel(p.status),
+    p.solicitadoPor||"", p.aprovadoPor||"",
+    p.dataSolicitacaoDesconto||"", p.dataAprovacaoDesconto||""
+  ]);
+  const csv = [headers,...rows].map(r => r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url;
+  a.download=`descontos_${new Date().toLocaleDateString("pt-BR").replace(/\//g,"-")}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
 </script>
 </body>
 </html>
